@@ -2,7 +2,7 @@
 
 画面では「コホートの糸」を「世代の線」と表記する。
 
-公開の入口は、この3Dページ（`index.html`）にする。全国ページ（national.html）と地域別ページ（regions.html）は残すが、3Dページからはリンクせず、noindex にして、URLを直接開いた人だけが見られるようにする。旧 `mountain.html` は `/` への転送ページにする。この3Dページで、全国の各歳別人口を3Dで見せる。見た目の基準は、docs/mocks/3d/ の静止画モック（01〜08）と、その元になった mock.html。色は男女の色（モック01）を使う。
+公開の入口は、この3Dページ（`index.html`）にする。全国ページ（national.html）と地域別ページ（regions.html）は残す。3Dページからはリンクしない。2Dの2ページは互いにリンクし、noindex は付けず、検索に載せる（canonical と OGP を置く）。旧 `mountain.html` は `/` への転送ページにする。この3Dページで、全国の各歳別人口を3Dで見せる。見た目の基準は、docs/mocks/3d/ の静止画モック（01〜08）と、その元になった mock.html。色は男女の色（モック01）を使う。
 
 Git の手順は docs/PLAN.md §5 と同じ。ブランチは `claude/sharp-newton-grgdly`。所有パスだけを add し、pull --rebase してから push する。force push はしない。
 
@@ -111,7 +111,7 @@ Git の手順は docs/PLAN.md §5 と同じ。ブランチは `claude/sharp-newt
 - **補助**
   - データ表を `<details>` に入れる。中身は、断面の年の各歳と男女の人数。全国ページと同じ形式（年齢は `th scope=row`、値のない所は「—」、全行を表示し、閉じている間は描かない）。
   - 全国ページと地域別ページへのリンクは置かない。
-  - national.html と regions.html の `.page-nav` は「← 人口の山脈（3D）へ」（href="./"）の1本だけにする。
+  - national.html の `.page-nav` は「都道府県・地方別に見る →」（href="regions.html"）、regions.html の `.page-nav` は「← 全国の各歳別ピラミッド」（href="national.html"）の1本だけにする。3Dページへのリンクは置かない。
 - **URL**：`?step=<data-step>` を付けて開くと、その段にスクロールした状態で始まる。
 
 ## 6. E2E との約束

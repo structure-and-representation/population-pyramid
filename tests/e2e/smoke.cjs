@@ -163,6 +163,17 @@ async function main() {
     const d = await openPage(browser, DESKTOP, 'desktop');
     const dp = d.page;
     data = await getData(dp);
+    await check('1d. 全国ページ：regions.html へのリンクだけがあり、3Dページへのリンクと noindex が無く、canonical が自分のURLを指す', async () => {
+      const hrefs = await dp.$$eval('a[href]', (as) => as.map((a) => a.getAttribute('href')));
+      const nav = await dp.$$eval('.page-nav a[href]', (as) => as.map((a) => a.getAttribute('href')));
+      assert(nav.length === 1 && nav[0] === 'regions.html', `.page-nav=${JSON.stringify(nav)}`);
+      const to3d = hrefs.filter((h) => h === './' || h === '/' || /(^|\/)index\.html(\?|#|$)/.test(h));
+      assert(to3d.length === 0, `3Dページへのリンク: ${JSON.stringify(to3d)}`);
+      const robots = await dp.$$eval('meta[name="robots"]', (ms) => ms.map((m) => m.content));
+      assert(!robots.some((c) => /noindex/i.test(c)), `noindex: ${JSON.stringify(robots)}`);
+      const canon = await dp.$$eval('link[rel="canonical"]', (ls) => ls.map((l) => l.href));
+      assert(canon.join() === 'https://population-pyramid.structure-and-representation.com/national.html', `canonical=${JSON.stringify(canon)}`);
+    });
     await check('1. 初回ロードで console error / pageerror / 失敗リクエスト / HTTP>=400 が0件', async () => {
       await sleep(300);
       assert(d.mine.length === 0, d.mine.join('\n'));
