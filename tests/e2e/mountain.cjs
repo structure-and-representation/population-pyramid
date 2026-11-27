@@ -774,6 +774,21 @@ async function main() {
       assert(bad.length === 0, bad.join('\n'));
     });
 
+    await check('10b. 2Dの2ページのリンクをクリックすると相手のページへ移り、body[data-ready="true"] になる', async () => {
+      const ctx = await browser.newContext(DESKTOP_REDUCED);
+      const pg = await ctx.newPage();
+      try {
+        await pg.goto(`${args.base}/national.html?fixture=1`, { waitUntil: 'load' });
+        await pg.waitForSelector('body[data-ready="true"]', { timeout: 20000 });
+        await pg.click('.page-nav a');
+        await pg.waitForURL((u) => /\/regions\.html$/.test(u.pathname), { timeout: 10000 });
+        await pg.waitForSelector('body[data-ready="true"]', { timeout: 20000 });
+        await pg.click('.page-nav a');
+        await pg.waitForURL((u) => /\/national\.html$/.test(u.pathname), { timeout: 10000 });
+        await pg.waitForSelector('body[data-ready="true"]', { timeout: 20000 });
+      } finally { await ctx.close(); }
+    });
+
     await check('11a. 375px でタップしたあと、ツールチップが見えたまま残る', async () => {
       await scrollToStep(mp, 'free');
       await waitBodyStep(mp, 'free');
@@ -871,20 +886,26 @@ async function main() {
     await d.ctx.close();
 
     // ---- 10: 他ページからのリンク ----
-    await check('10. 2Dの2ページは ./ へ戻るリンクだけを持ち、noindex。/mountain.html は / へ転送する', async () => {
+    await check('10. 2Dの2ページは互いにだけリンクし、noindex が無く canonical が自分のURL。/ は2Dへリンクせず、/mountain.html は / へ転送する', async () => {
       const ctx = await browser.newContext(DESKTOP_REDUCED);
       const pg = await ctx.newPage();
       const bad = [];
+      const ORIGIN = 'https://population-pyramid.structure-and-representation.com/';
+      const SPEC = { 'national.html': 'regions.html', 'regions.html': 'national.html' };
       try {
-        for (const file of ['national.html', 'regions.html']) {
+        for (const [file, other] of Object.entries(SPEC)) {
           await pg.goto(`${args.base}/${file}`, { waitUntil: 'load' });
           const hrefs = await pg.$$eval('.page-nav a[href]', (as) => as.map((a) => a.getAttribute('href')));
-          if (hrefs.length !== 1 || hrefs[0] !== './') bad.push(`${file}: .page-nav が ["./"] だけではない ${JSON.stringify(hrefs)}`);
+          if (hrefs.length !== 1 || hrefs[0] !== other) bad.push(`${file}: .page-nav が ["${other}"] だけではない ${JSON.stringify(hrefs)}`);
           const all = await pg.$$eval('a[href]', (as) => as.map((a) => a.getAttribute('href')));
-          const other = all.filter((h) => /(^|\/)(index|national|regions|mountain)\.html(\?|#|$)/.test(h));
-          if (other.length) bad.push(`${file}: 他ページへのリンクがある ${JSON.stringify(other)}`);
+          const to3d = all.filter((h) => h === './' || h === '/' || /(^|\/)(index|mountain)\.html(\?|#|$)/.test(h));
+          if (to3d.length) bad.push(`${file}: 3Dページへのリンクがある ${JSON.stringify(to3d)}`);
           const robots = await pg.$$eval('meta[name="robots"]', (ms) => ms.map((m) => m.content));
-          if (!robots.some((c) => /noindex/i.test(c))) bad.push(`${file}: noindex がない`);
+          if (robots.some((c) => /noindex/i.test(c))) bad.push(`${file}: noindex がある`);
+          const canon = await pg.$$eval('link[rel="canonical"]', (ls) => ls.map((l) => l.href));
+          if (canon.join() !== ORIGIN + file) bad.push(`${file}: canonical=${JSON.stringify(canon)}`);
+          const og = await pg.$$eval('meta[property^="og:"]', (ms) => Object.fromEntries(ms.map((m) => [m.getAttribute('property'), m.content])));
+          if (og['og:type'] !== 'website' || og['og:url'] !== ORIGIN + file || !og['og:title'] || !og['og:description']) bad.push(`${file}: OGP=${JSON.stringify(og)}`);
         }
         await pg.goto(`${args.base}/`, { waitUntil: 'load' });
         const robots = await pg.$$eval('meta[name="robots"]', (ms) => ms.map((m) => m.content));

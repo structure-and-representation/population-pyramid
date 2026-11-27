@@ -4,7 +4,7 @@
 
 ## 公開URLとページ構成
 
-公開URLは <https://population-pyramid.structure-and-representation.com/>（GitHub Pages、`main` ブランチ）です。表に出すのは3Dページ（`index.html`）だけです。2Dの2ページは、他ページからリンクせず `noindex` にしていますが、URLを直接開けば見られます。
+公開URLは <https://population-pyramid.structure-and-representation.com/>（GitHub Pages、`main` ブランチ）です。3Dページ（`index.html`）が入口です。2Dの2ページ（`national.html`、`regions.html`）は互いにリンクし、検索にも載ります（`noindex` なし。canonical と OGP を設定）。3Dページからは2Dの2ページへリンクしません。
 
 | ページ | ファイル | URL |
 |---|---|---|
@@ -13,7 +13,7 @@
 | 都道府県・地方別（2D） | `regions.html` | `/regions.html` |
 | 古いURLの転送 | `mountain.html` | `/mountain.html` → `/`（`?step=` などのクエリを引き継ぐ） |
 
-2Dの2ページには、3Dページへ戻るリンク（「← 人口の山脈（3D）へ」）だけを置いています。
+2Dの2ページの `.page-nav` には、相手のページへのリンクを1本だけ置いています（全国は「都道府県・地方別に見る →」、地域別は「← 全国の各歳別ピラミッド」）。3Dページへのリンクはありません。
 
 計測タグ（Google タグマネージャー、コンテナID `GTM-55W4KMR6`、本番ホスト限定）を `index.html`・`national.html`・`regions.html` の `<head>` に入れています（転送ページ `mountain.html` には入れていません）。E2E では GTM / GA への通信を止めて検査します。
 

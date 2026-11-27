@@ -153,7 +153,7 @@ Git の手順は docs/PLAN.md §5 と同じ（ブランチ `claude/sharp-newton-
   - 再生中は `#year-display` の aria-live を off にする。
 - **ツールチップ**：タイルにホバーかタップで表示する。内容は、地域名、総人口（「1億2,297万人」「55万人」の書式は全国ページの formatTotal と同じ）、65歳以上の割合、そしてポインタのある段の年齢階級と、男女それぞれの割合（%、小数1桁）。
 - **URL**：停止中は `?year=` と `?facet=prefecture|block` を replaceState で書き換える。
-- **全国ページ**：当初は全国ページから地域別ページへのリンクを置いたが、現在は3Dページ（index.html）だけを表に出すため、リンクを置かない。.page-nav は「← 人口の山脈（3D）へ」（href="./"）の1本だけ。
+- **全国ページ**：2Dの2ページは互いにリンクする。national.html の .page-nav は「都道府県・地方別に見る →」（href="regions.html"）、regions.html の .page-nav は「← 全国の各歳別ピラミッド」（href="national.html"）の1本だけ。3Dページ（index.html）へのリンクは置かない。noindex は付けず、canonical と OGP を置く。
 
 ### E2E との約束（DOM の目印）
 - 切り替え：`#facet-toggle button[data-facet="prefecture"]` と `[data-facet="block"]`。選択中は `aria-pressed="true"`。
